@@ -11,7 +11,8 @@ Add the entry for a change in the same commit as the change itself.
 
 ### Added
 
-- Log a warning with the failure when a decision fails, so timeouts and judge errors do not fall back silently.
+- Warn with the exception type or `timeout` when a decision fails, without exposing exception messages
+  or tracebacks. Keep diagnostic details in `Trace.failure`.
 
 ### Changed
 

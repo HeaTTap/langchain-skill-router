@@ -124,7 +124,8 @@ class SkillRouter:
         except Exception as err:
             failure = "timeout" if isinstance(err, TimeoutError) else f"{type(err).__name__}: {err}"
             trace = Trace(failure=failure, seconds=time.monotonic() - started)
-            logger.warning("Skill Router decision failed: %s", failure)
+            # Exception details in the trace may contain user requests or skill contents.
+            logger.warning("Skill Router decision failed: %s", "timeout" if isinstance(err, TimeoutError) else type(err).__name__)
             return Decision(suggest=tuple(ranked_so_far[: self.settings.max_suggest]), trace=trace)
 
     async def _decide(self, turn: Turn, started: float, ranked_so_far: list[str]) -> Decision:
