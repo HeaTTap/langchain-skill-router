@@ -20,6 +20,7 @@ Add the entry for a change in the same commit as the change itself.
 
 ### Fixed
 
+- Respect `max_load=0` when confident ranking skips verification: offer the candidate instead (#12).
 - Keep the selected decision when the `on_decision` callback raises; warn once per middleware and continue the turn.
 - An empty skill catalog now returns an empty decision or search results without calling the judge.
   Empty decisions use the `empty` trace stage to distinguish them from failures.
