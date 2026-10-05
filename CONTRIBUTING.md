@@ -4,6 +4,9 @@ Use plain English in issues, commits, documentation and code comments. Follow th
 [development guide](docs/development.md) for code and tests, [design](docs/design.md) for how the
 product behaves, and the [Code of Conduct](CODE_OF_CONDUCT.md) when working with others.
 
+Do not add generated-by lines, tool attribution footers or similar signatures anywhere: not in commits,
+pull requests, reviews, comments, issues, documentation or code.
+
 ## Issues
 
 Check for an existing issue before opening one. Give each issue one clear outcome and a short title
@@ -67,7 +70,7 @@ Work without an issue uses the same one line without the number:
 add the pull request template
 ```
 
-Do not add a commit body, co-author lines, sign-off trailers or generated-by messages. Git still
+Do not add a commit body, co-author lines or sign-off trailers. Git still
 records the normal author and committer metadata. Keep unrelated changes out of the commit and inspect
 the staged diff before committing.
 
