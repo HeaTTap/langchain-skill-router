@@ -24,6 +24,19 @@ from langchain_skill_router.testing import ScriptedJudge, yes
 CATALOG = [skill(n) for n in ("visa-statement", "spending-by-category", "subscriptions", "card-limits", "dispute")]
 
 
+async def test_empty_catalog_returns_empty_decisions_without_asking_the_judge():
+    judge = ScriptedJudge(lambda state, questions: {})
+    router = SkillRouter([], judge)
+
+    for turn in (Turn("hello"), Turn("and now?", context="previous conversation")):
+        decision = await router.decide(turn)
+        assert (decision.load, decision.suggest) == ((), ())
+        assert decision.trace.failure is None
+        assert decision.trace.stage == "empty"
+        assert decision.trace.candidates == ()
+    assert judge.calls == []
+
+
 def scripted(
     pick: Mapping[str, float],
     need: float = 0.9,
@@ -299,6 +312,15 @@ def test_broken_catalog_fails_at_once(catalog):
 # --- search behind find_skill ---------------------------------------------------------------------
 
 
+async def test_empty_catalog_returns_no_search_results_without_asking_the_judge():
+    judge = ScriptedJudge(lambda state, questions: {})
+    router = SkillRouter([], judge)
+
+    assert await router.search("visa statement") == []
+    assert await router.search("subscriptions", limit=2) == []
+    assert judge.calls == []
+
+
 async def test_search_returns_best_skills_by_probability():
     judge = scripted({"subscriptions": 0.5, "dispute": 0.3, "card-limits": 0.1, "visa-statement": 0.05})
 
@@ -323,6 +345,20 @@ async def test_ranking_probabilities_are_in_the_trace():
 
     assert d.trace.candidates == (("visa-statement", 0.7), ("dispute", 0.2))
     assert d.trace.stage == "verify"
+
+
+@pytest.mark.parametrize("skip_verify_at", [0.8, None])
+@pytest.mark.parametrize("max_suggest", [0, 1, 3])
+async def test_zero_max_load_only_suggests_with_or_without_verification(skip_verify_at, max_suggest):
+    judge = scripted({"visa-statement": 0.95}, fits={"visa-statement": 0.95})
+    settings = Settings(max_load=0, max_suggest=max_suggest, skip_verify_at=skip_verify_at)
+
+    decision = await SkillRouter([CATALOG[0]], judge, settings).decide(Turn("visa statement"))
+
+    assert decision.load == ()
+    assert decision.suggest == (("visa-statement",) if max_suggest else ())
+    assert decision.trace.failure is None
+    assert decide_from_trace(settings, decision.trace) == decision
 
 
 async def test_a_confident_ranking_skips_verification_when_the_product_allows_it():
